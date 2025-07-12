@@ -5,9 +5,17 @@ const Upload = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [audioUrl, setAudioUrl] = useState(null);
+  const [transcript, setTranscript] = useState(null);
+  const [error, setError] = useState(false);
 
   const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]);
+    const file = e.target.files[0];
+    setSelectedFile(file);
+    setAudioUrl(URL.createObjectURL(file)); // for preview
+    setTranscript(null);
+    setMessage("");
+    setError(false);
   };
 
   const handleUpload = async () => {
@@ -22,8 +30,10 @@ const Upload = () => {
     try {
       setLoading(true);
       setMessage("");
+      setTranscript(null);
+      setError(false);
 
-      const res = await axios.post("http://localhost:5000/api/upload", formData, {
+      const uploadRes = await axios.post("http://localhost:5000/api/upload", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -36,8 +46,38 @@ const Upload = () => {
         "🔥 That upload was smoother than butter on toast.",
       ];
       setMessage(successMessages[Math.floor(Math.random() * successMessages.length)]);
+
+      const { audioUrl } = uploadRes.data;
+
+      // Transcribe it
+      const transcribeRes = await axios.post("http://localhost:5000/api/transcribe", { audioUrl });
+
+      const transcriptId = transcribeRes.data.id;
+      setMessage("🧠 Transcribing... please wait");
+
+      let transcriptText = "";
+      let polling = true;
+
+      while (polling) {
+        const pollRes = await axios.get(
+          `http://localhost:5000/api/transcribe/${transcriptId}`
+        );
+
+        if (pollRes.data.status === "completed") {
+          transcriptText = pollRes.data.text;
+          polling = false;
+        } else if (pollRes.data.status === "error") {
+          throw new Error("Transcription failed.");
+        } else {
+          await new Promise((res) => setTimeout(res, 1500));
+        }
+      }
+
+      setTranscript(transcriptText);
+      setMessage("📝 Transcript ready!");
     } catch (err) {
       setMessage("❌ Uh-oh! That didn’t go as planned. 🧨 Try again?");
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -107,17 +147,63 @@ const Upload = () => {
           {loading ? "Uploading..." : "🚀 Upload"}
         </button>
 
+        {audioUrl && (
+          <audio
+            controls
+            src={audioUrl}
+            style={{ marginTop: "1.2rem", width: "100%", borderRadius: "10px" }}
+          />
+        )}
+
         {message && (
           <p
             style={{
               marginTop: "1.5rem",
               fontWeight: "500",
-              color: "#facc15",
+              color: error ? "#f87171" : "#facc15",
               fontSize: "1rem",
             }}
           >
             {message}
           </p>
+        )}
+
+        {error && (
+          <button
+            onClick={handleUpload}
+            style={{
+              marginTop: "1rem",
+              backgroundColor: "#ef4444",
+              color: "#fff",
+              padding: "10px 20px",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontWeight: "bold",
+            }}
+          >
+            🔁 Retry Transcription
+          </button>
+        )}
+
+        {transcript && (
+          <div
+            style={{
+              marginTop: "2rem",
+              padding: "1rem",
+              backgroundColor: "#1f2937",
+              borderRadius: "12px",
+              color: "#e5e7eb",
+              textAlign: "left",
+              maxHeight: "300px",
+              overflowY: "auto",
+              fontSize: "1rem",
+              whiteSpace: "pre-wrap",
+            }}
+          >
+            <h3 style={{ color: "#a5b4fc", marginBottom: "0.5rem" }}>📝 Transcript:</h3>
+            {transcript}
+          </div>
         )}
       </div>
     </div>

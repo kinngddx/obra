@@ -12,19 +12,35 @@ const Login = () => {
     setAnimate(true);
   }, []);
 
+  // const handleLogin = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     const res = await axios.post("http://localhost:5000/api/auth/login", {
+  //       email,
+  //       password,
+  //     });
+  //     localStorage.setItem("token", res.data.token);
+  //     navigate("/dashboard");
+  //   } catch (err) {
+  //     alert("Invalid credentials!");
+  //   }
+  // };
+
+
   const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", {
-        email,
-        password,
-      });
-      localStorage.setItem("token", res.data.token);
-      navigate("/dashboard");
-    } catch (err) {
-      alert("Invalid credentials!");
-    }
-  };
+  e.preventDefault();
+  try {
+    // ✅ CHANGE THIS LINE - Remove the full URL
+    const res = await axios.post("/api/auth/login", {
+      email,
+      password,
+    });
+    localStorage.setItem("token", res.data.token);
+    navigate("/dashboard");
+  } catch (err) {
+    alert("Invalid credentials!");
+  }
+};
 
   return (
     <div

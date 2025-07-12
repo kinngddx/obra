@@ -160,7 +160,8 @@ app.use(cors());
 app.use(express.json());
 
 
-// app.use("/api/auth", require("./routes/auth"));
+app.use("/api/auth", require("./routes/auth"));
+
 app.use("/api/upload", require("./routes/upload"));
 app.use("/api/transcribe", require("./routes/transcribe"));
 
@@ -168,13 +169,88 @@ app.use("/api/transcribe", require("./routes/transcribe"));
 app.use(express.static(path.join(__dirname, '../client/build')));
 
 
-app.get('*', (req, res) => {
-  if (req.path.startsWith('/api/')) {
-    return res.status(404).json({ error: 'API route not found' });
-  }
 
-  res.sendFile(path.join(__dirname, '../client/build/index.html'));
+
+
+
+
+
+
+// // ✅ SAFE: Handle specific routes instead of wildcards
+// app.get('/', (req, res) => {
+//   res.sendFile(path.join(__dirname, '../client/build/index.html'));
+// });
+
+// // Handle common React routes explicitly
+// app.get('/login', (req, res) => {
+//   res.sendFile(path.join(__dirname, '../client/build/index.html'));
+// });
+
+// app.get('/dashboard', (req, res) => {
+//   res.sendFile(path.join(__dirname, '../client/build/index.html'));
+// });
+
+// app.get('/register', (req, res) => {
+//   res.sendFile(path.join(__dirname, '../client/build/index.html'));
+// });
+
+// // Handle 404 for API routes only
+// app.use('/api', (req, res) => {
+//   res.status(404).json({ error: 'API route not found' });
+// });
+
+
+// Serve frontend routes explicitly
+const frontendRoutes = ['/login', '/dashboard', '/register', '/signup', '/upload', '/'];
+
+frontendRoutes.forEach(route => {
+  app.get(route, (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/build/index.html'));
+  });
 });
+
+// Handle 404 for unknown API routes
+app.use('/api', (req, res) => {
+  res.status(404).json({ error: 'API route not found' });
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+// app.get('*', (req, res) => {
+//   // app.get('/*', (req, res) => {
+
+//   if (req.path.startsWith('/api/')) {
+//     return res.status(404).json({ error: 'API route not found' });
+//   }
+
+//   res.sendFile(path.join(__dirname, '../client/build/index.html'));
+// });
+
+
+
+
+
+
+
+
+// app.get('/', (req, res) => {
+//   res.sendFile(path.join(__dirname, '../client/build/index.html'));
+// });
+
+// // Handle 404 for API routes
+// app.use('/api/*', (req, res) => {
+//   res.status(404).json({ error: 'API route not found' });
+// });
 
 
 mongoose.connect(MONGO_URI)
@@ -187,3 +263,4 @@ mongoose.connect(MONGO_URI)
   .catch((err) => {
     console.error("❌ MongoDB connection error:", err);
   });
+
