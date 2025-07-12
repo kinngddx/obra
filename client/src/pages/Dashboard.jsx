@@ -19,7 +19,7 @@ const Dashboard = () => {
         });
         setCalls(res.data);
       } catch (err) {
-        setError("Failed to load calls");
+        setError("❌ Failed to load calls.");
       } finally {
         setLoading(false);
       }
@@ -33,52 +33,90 @@ const Dashboard = () => {
     navigate("/login");
   };
 
-  if (!user) {
-    return <p>Loading user...</p>;
-  }
+  if (!user) return <p style={{ color: "#fff" }}>Loading user...</p>;
 
   return (
-    <div className="max-w-2xl mx-auto mt-10 text-center p-6 shadow-lg rounded-2xl bg-white">
-      <h1 className="text-3xl font-bold mb-4">📊 Welcome to VoiceVault Dashboard</h1>
-      <button
-        onClick={handleLogout}
-        className="mb-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "linear-gradient(to right, #0f172a, #1e293b)",
+        color: "#fff",
+        padding: "2rem",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "900px",
+          margin: "0 auto",
+          padding: "2rem",
+          background: "rgba(255, 255, 255, 0.05)",
+          borderRadius: "20px",
+          boxShadow: "0 8px 30px rgba(0, 0, 0, 0.4)",
+        }}
       >
-        Logout
-      </button>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "2rem" }}>
+          <h1 style={{ fontSize: "2rem", fontWeight: "bold" }}>📊 VoiceVault Dashboard</h1>
+          <button
+            onClick={handleLogout}
+            style={{
+              backgroundColor: "#ef4444",
+              color: "#fff",
+              padding: "10px 16px",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontWeight: "bold",
+              transition: "all 0.3s ease",
+            }}
+          >
+            🔒 Logout
+          </button>
+        </div>
 
-      {loading && <p>Loading calls...</p>}
-      {error && <p className="text-red-600">{error}</p>}
+        {loading && <p>🔄 Loading calls...</p>}
+        {error && <p style={{ color: "#f87171" }}>{error}</p>}
+        {!loading && !error && calls.length === 0 && <p>😶 No calls found yet.</p>}
 
-      {!loading && !error && calls.length === 0 && <p>No calls found.</p>}
-
-      {!loading && !error && calls.length > 0 && (
-        <ul className="text-left">
+        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           {calls.map((call) => (
-            <li
+            <div
               key={call._id}
-              className="mb-4 p-4 border border-gray-300 rounded hover:shadow"
+              style={{
+                padding: "1.5rem",
+                border: "1px solid #4b5563",
+                borderRadius: "12px",
+                background: "rgba(255, 255, 255, 0.05)",
+              }}
             >
-              <p>
-                <strong>Agent:</strong> {call.agent}
+              <p><strong>👤 Agent:</strong> {call.agent}</p>
+              <p style={{ margin: "1rem 0", whiteSpace: "pre-wrap" }}>
+                <strong>📝 Transcript:</strong> {call.transcript}
               </p>
-              <p className="whitespace-pre-wrap">
-                <strong>Transcript:</strong> {call.transcript}
+              <p style={{ color: "#9ca3af", fontSize: "0.9rem" }}>
+                ⏰ {new Date(call.createdAt).toLocaleString()}
               </p>
-              <p className="text-gray-500 text-sm">
-                {new Date(call.createdAt).toLocaleString()}
-              </p>
-            </li>
+            </div>
           ))}
-        </ul>
-      )}
+        </div>
 
-      <Link
-        to="/upload"
-        className="inline-block mt-6 px-6 py-2 bg-purple-600 text-white font-semibold rounded-lg shadow hover:bg-purple-700 transition duration-300"
-      >
-        🎙️ Go to Upload Page
-      </Link>
+        <div style={{ textAlign: "center", marginTop: "2rem" }}>
+          <Link
+            to="/upload"
+            style={{
+              backgroundColor: "#8b5cf6",
+              color: "#fff",
+              padding: "12px 24px",
+              borderRadius: "10px",
+              fontWeight: "bold",
+              textDecoration: "none",
+              display: "inline-block",
+              transition: "all 0.3s ease",
+            }}
+          >
+            🎙️ Upload More Audio
+          </Link>
+        </div>
+      </div>
     </div>
   );
 };

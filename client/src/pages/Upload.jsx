@@ -1,127 +1,125 @@
-import { useState } from 'react';
-import axios from 'axios';
+import React, { useState } from "react";
+import axios from "axios";
 
 const Upload = () => {
-  const [file, setFile] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [transcript, setTranscript] = useState('');
 
   const handleFileChange = (e) => {
-    const selected = e.target.files[0];
-    if (selected && selected.size > 10 * 1024 * 1024) {
-      setMessage('📦 File too big! Max 10MB please.');
-      return;
-    }
-    setFile(selected);
-    setMessage('🎧 Nice pick! File is ready for launch 🚀');
-    setTranscript('');
+    setSelectedFile(e.target.files[0]);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!file) {
-      setMessage('🤦‍♂️ Dude… select a file first!');
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      setMessage("📂 Pick a file first, my friend. I'm not a mind reader 😅");
       return;
     }
 
-    // Step 3 & 4 combined: get token from localStorage and use in axios headers
-    const user = JSON.parse(localStorage.getItem('user'));
-    const token = user?.token;
-
     const formData = new FormData();
-    formData.append('audio', file);
-
-    setLoading(true);
-    setMessage('🔮 Casting transcription spells... please wait!');
+    formData.append("audio", selectedFile);
 
     try {
-      const res = await axios.post(
-        'http://localhost:5000/api/upload',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setTranscript(res.data.transcript);
-      setMessage('🎉 Woohoo! Transcript is ready, genius 🧠');
+      setLoading(true);
+      setMessage("");
+
+      const res = await axios.post("http://localhost:5000/api/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const successMessages = [
+        "✅ Boom! File uploaded like a champ. 🏆 Transcript cooking...",
+        "🎉 Nailed it! Audio uploaded. Sit back and relax 😎",
+        "🚀 Whoosh! File’s flying through the internet.",
+        "🔥 That upload was smoother than butter on toast.",
+      ];
+      setMessage(successMessages[Math.floor(Math.random() * successMessages.length)]);
     } catch (err) {
-      setMessage(
-        err.response?.data?.message || '💥 Upload exploded. Blame the gremlins!'
-      );
+      setMessage("❌ Uh-oh! That didn’t go as planned. 🧨 Try again?");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-200 p-4">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md"
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "linear-gradient(to right, #0f172a, #1e293b)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: "1rem",
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: "500px",
+          background: "rgba(255, 255, 255, 0.05)",
+          backdropFilter: "blur(10px)",
+          borderRadius: "20px",
+          padding: "2rem",
+          boxShadow: "0 8px 30px rgba(0, 0, 0, 0.4)",
+          color: "#fff",
+          textAlign: "center",
+        }}
       >
-        <h2 className="text-3xl font-extrabold mb-6 text-center text-purple-700">
-          🎙️ Voice Upload Zone
+        <h2 style={{ fontSize: "1.8rem", fontWeight: "bold", marginBottom: "1rem" }}>
+          🎙️ Upload Audio File
         </h2>
 
         <input
           type="file"
-          accept=".mp3,.wav"
+          accept="audio/*"
           onChange={handleFileChange}
-          className="w-full mb-4 border p-2 rounded text-sm"
+          style={{
+            marginBottom: "1.5rem",
+            background: "#1f2937",
+            padding: "12px",
+            border: "1px solid #4b5563",
+            color: "#f9fafb",
+            borderRadius: "10px",
+            width: "100%",
+            cursor: "pointer",
+          }}
         />
 
         <button
+          onClick={handleUpload}
           disabled={loading}
-          className={`w-full py-2 rounded font-semibold ${
-            loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'
-          } text-white transition duration-300 mb-4 flex items-center justify-center`}
+          style={{
+            backgroundColor: "#8b5cf6",
+            color: "#fff",
+            padding: "12px 24px",
+            border: "none",
+            borderRadius: "10px",
+            fontSize: "1rem",
+            fontWeight: "bold",
+            cursor: "pointer",
+            width: "100%",
+            transition: "all 0.3s ease",
+            opacity: loading ? 0.7 : 1,
+          }}
         >
-          {loading ? (
-            <>
-              <svg
-                className="animate-spin h-5 w-5 mr-2 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8v8z"
-                ></path>
-              </svg>
-              Transcribing magic... ✨
-            </>
-          ) : (
-            '🧠 Start Transcribing'
-          )}
+          {loading ? "Uploading..." : "🚀 Upload"}
         </button>
 
         {message && (
-          <p className="text-center text-sm font-medium text-purple-800 mb-4 animate-pulse">
+          <p
+            style={{
+              marginTop: "1.5rem",
+              fontWeight: "500",
+              color: "#facc15",
+              fontSize: "1rem",
+            }}
+          >
             {message}
           </p>
         )}
-
-        {transcript && (
-          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded text-gray-800 whitespace-pre-wrap text-sm max-h-60 overflow-y-auto">
-            <p className="font-semibold mb-2">📜 Transcript:</p>
-            {transcript}
-          </div>
-        )}
-      </form>
+      </div>
     </div>
   );
 };
