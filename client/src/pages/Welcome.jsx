@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+
 const taglines = [
   "Where your voice becomes data (and hopefully not embarrassing 😅)",
   "Transcribe it. Analyze it. Brag about it.",
@@ -20,6 +21,9 @@ const Welcome = () => {
 
     return () => clearInterval(interval);
   }, []);
+
+  console.log("Welcome component rendered!");
+
 
   return (
     <div
